@@ -29,7 +29,7 @@ DB_SERVER=mongodb://test:test@127.0.0.1:27017/<BR>
 DB_NAME=TEST<BR>
 COLLECTION_NAME=TEST<BR>
 INDEXES=NAME,GENDER,COUNTRY&CITY
-USER_ACCOUNTS={'admin': {'hashpw': b'$2b$12$JR304Lni8IuX/34WR4MsXelyDQgvE5wiiXTs2DwuWNC7qk1x8xccy' , 'role': 'admin', 'privileges': 'CRUD'}, 'user': {'hashpw': b'$2b$12$3u87g5okgHgUuOLDbSNHiuJa/4B8D.SuKytzrmiuxYg.OjN/bvYJS', 'role': 'user', 'privileges': 'R'}}
+USER_ACCOUNTS="[{'username': 'admin', 'hashpw': b'$2b$12$JR304Lni8IuX/34WR4MsXelyDQgvE5wiiXTs2DwuWNC7qk1x8xccy' , 'role': 'admin', 'privileges': 'CRUD'}, {'username': 'user', 'hashpw': b'$2b$12$3u87g5okgHgUuOLDbSNHiuJa/4B8D.SuKytzrmiuxYg.OjN/bvYJS', 'role': 'user', 'privileges': 'R'}]"<BR>
 
 - Lancer le programme avec la commande : **python3 migration.py**
 
