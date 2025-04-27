@@ -35,7 +35,7 @@ def check_indexes(dataframe, str_indexes):
             strip_index = index2.strip()
             for col in dataframe.columns:
                 if col.lower() == strip_index.lower():
-                    comb_indexes.append(col)
+                    comb_indexes.append((col, pymongo.ASCENDING))
         if comb_indexes:
             indexes.append(comb_indexes)
     print(f"Indexes à créer: {indexes}")
@@ -68,7 +68,7 @@ def insert_df_to_mongo(dataframe, server, db_name, collection_name, indexes):
         client.close()
     return inserted_records
 
-def insert_accounts_to_mongo(user_dict, server, db_name, collection_name):
+def insert_accounts_to_mongo(user_list, server, db_name, collection_name):
     """ Insertion des comptes utilisateurs dans une base de données MongoDB
     """
     # Connexion au serveur MongoDB
@@ -82,7 +82,7 @@ def insert_accounts_to_mongo(user_dict, server, db_name, collection_name):
     # Vidage de la collection
     collection.delete_many({})
     # Insertion du dataframe
-    result = collection.insert_many(user_dict)
+    result = collection.insert_many(user_list)
     client.close()
     return len(result.inserted_ids)
 
