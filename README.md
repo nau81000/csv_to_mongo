@@ -29,18 +29,37 @@ DB_SERVER=mongodb://test:test@127.0.0.1:27017/<BR>
 DB_NAME=TEST<BR>
 COLLECTION_NAME=TEST<BR>
 INDEXES=NAME,GENDER,COUNTRY&CITY
+USER_ACCOUNTS="[{'username': 'admin', 'hashpw': b'$2b$12$JR304Lni8IuX/34WR4MsXelyDQgvE5wiiXTs2DwuWNC7qk1x8xccy' , 'role': 'admin', 'privileges': 'CRUD'}, {'username': 'user', 'hashpw': b'$2b$12$3u87g5okgHgUuOLDbSNHiuJa/4B8D.SuKytzrmiuxYg.OjN/bvYJS', 'role': 'user', 'privileges': 'R'}]"<BR>
 
 - Lancer le programme avec la commande : **python3 migration.py**
 
-### 3. Déroulement du script:
+### 4. Déroulement du script:
 
 - Lecture du fichier et construction d'un dataframe avec Pandas
 - Les colonnes du dataframe de type string sont converties en mode titre (première lettre de chaque mot en majuscule, les autres en minuscule)
 - Les doublons du dataframe sont supprimés
 - Les indexes de la collection sont supprimés
 - La collection est vidée
-- Les enregistrements (documents) sont insérés directement dans la collection sans création d'indexes
+- Les enregistrements (documents) venant du ficher CSV sont insérés directement dans la collection avec les indexes précisés
 
-### 4. Tests:
+Note:
+- Une collection d'utilisateurs est automatiquement créée à partir de la variable d'environnement `USER_ACCOUNTS`. Cette collection peut-être utilisée par une application pour contrôler l'accès à la base de données
+- Un hachage du mot de passe de chaque utilisateur est fortement recommandé. L'algorithme BCRYPT peut remplir cette tâche.
+
+Exemple de création d'un mot de passe avec Python:
+
+~~~
+import bcrypt 
+# example password 
+password = 'test'
+# converting password to array of bytes 
+bytes = password.encode('utf-8') 
+# generating the salt 
+salt = bcrypt.gensalt() 
+# Hashing the password 
+hash = bcrypt.hashpw(bytes, salt)
+~~~
+
+### 5. Tests:
 
 Lancer la séquence de test avec la commande : **pytest** 
