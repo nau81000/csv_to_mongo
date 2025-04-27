@@ -33,8 +33,9 @@ def check_indexes(dataframe, str_indexes):
         for index2 in index1.split('&'):
             # Suppression des éventuels espaces
             strip_index = index2.strip()
-            if strip_index in dataframe.columns:
-                comb_indexes.append(strip_index)
+            for col in dataframe.columns:
+                if col.lower() == strip_index.lower():
+                    comb_indexes.append(col)
         if comb_indexes:
             indexes.append(comb_indexes)
     return indexes
@@ -45,9 +46,9 @@ def insert_df_to_mongo(dataframe, server, db_name, collection_name, indexes):
     # Connexion au serveur MongoDB
     client = pymongo.MongoClient(server)
     # Création ou récupération de la base de données 
-    db = client[db_name]
+    db = client[db_name.lower()]
     # Création ou récupération d'une collection
-    collection = db[collection_name]
+    collection = db[collection_name.lower()]
     # Suppression des indexes
     collection.drop_indexes()
     # Vidage de la collection
@@ -57,6 +58,24 @@ def insert_df_to_mongo(dataframe, server, db_name, collection_name, indexes):
     # Création des indexes
     for index in indexes:
         collection.create_index(index)
+    client.close()
+    return len(result.inserted_ids)
+
+def insert_accounts_to_mongo(user_dict, server, db_name, collection_name):
+    """ Insertion des comptes utilisateurs dans une base de données MongoDB
+    """
+    # Connexion au serveur MongoDB
+    client = pymongo.MongoClient(server)
+    # Création ou récupération de la base de données 
+    db = client[db_name.lower()]
+    # Création ou récupération d'une collection
+    collection = db[collection_name.lower()]
+    # Suppression des indexes
+    collection.drop_indexes()
+    # Vidage de la collection
+    collection.delete_many({})
+    # Insertion du dataframe
+    result = collection.insert_many(user_dict)
     client.close()
     return len(result.inserted_ids)
 
@@ -70,15 +89,17 @@ def main():
     # Vérification des indexes
     indexes = check_indexes(dataframe, os.getenv('INDEXES'))
     # Insertion du dataframe dans une base MongoDB
-    insert_df_to_mongo(dataframe, os.getenv('DB_SERVER'), os.getenv('DB_NAME'), os.getenv('COLLECTION_NAME'), indexes)
-    # Insertion du dataframe dans une base MongoDB
     server = os.getenv('DB_SERVER')
     db_name = os.getenv('DB_NAME')
     collection_name = os.getenv('COLLECTION_NAME')
     nb_records = insert_df_to_mongo(dataframe, os.getenv('DB_SERVER'), os.getenv('DB_NAME'), os.getenv('COLLECTION_NAME'), indexes)
     # Logger le nombre d'enregistrements écrits
     print(f"{nb_records} enregistrements insérés dans la base {db_name}/{collection_name} sur {server}")
-
+    # Insertion des comptes utilisateurs
+    user_list = eval(os.getenv('USER_ACCOUNTS'))
+    nb_users = insert_accounts_to_mongo(user_list , os.getenv('DB_SERVER'), os.getenv('DB_NAME'), 'ACCOUNTS')
+    # Logger le nombre d'enregistrements écrits
+    print(f"{nb_users} enregistrements insérés dans la base {db_name}/ACCOUNTS sur {server}")
 
 if __name__ == '__main__':
     main()
