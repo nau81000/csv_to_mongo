@@ -38,6 +38,7 @@ def check_indexes(dataframe, str_indexes):
                     comb_indexes.append(col)
         if comb_indexes:
             indexes.append(comb_indexes)
+    print(f"Indexes à créer: {indexes}")
     return indexes
 
 def insert_df_to_mongo(dataframe, server, db_name, collection_name, indexes):
@@ -45,21 +46,27 @@ def insert_df_to_mongo(dataframe, server, db_name, collection_name, indexes):
     """
     # Connexion au serveur MongoDB
     client = pymongo.MongoClient(server)
-    # Création ou récupération de la base de données 
-    db = client[db_name.lower()]
-    # Création ou récupération d'une collection
-    collection = db[collection_name.lower()]
-    # Suppression des indexes
-    collection.drop_indexes()
-    # Vidage de la collection
-    collection.delete_many({})
-    # Insertion du dataframe
-    result = collection.insert_many(dataframe.to_dict(orient='records'))
-    # Création des indexes
-    for index in indexes:
-        collection.create_index(index)
-    client.close()
-    return len(result.inserted_ids)
+    inserted_records = 0
+    try:
+        # Création ou récupération de la base de données 
+        db = client[db_name.lower()]
+        # Création ou récupération d'une collection
+        collection = db[collection_name.lower()]
+        # Suppression des indexes
+        collection.drop_indexes()
+        # Vidage de la collection
+        collection.delete_many({})
+        # Insertion du dataframe
+        result = collection.insert_many(dataframe.to_dict(orient='records'))
+        inserted_records = len(result.inserted_ids)
+        # Création des indexes
+        for index in indexes:
+            collection.create_index(index)
+    except Exception as e:
+        print(str(e))
+    finally:
+        client.close()
+    return inserted_records
 
 def insert_accounts_to_mongo(user_dict, server, db_name, collection_name):
     """ Insertion des comptes utilisateurs dans une base de données MongoDB
