@@ -31,6 +31,7 @@ DB_SERVER=mongodb://test:test@127.0.0.1:27017/<BR>
 DB_NAME=TEST<BR>
 COLLECTION_NAME=TEST<BR>
 INDEXES=NAME,GENDER,COUNTRY&CITY<BR>
+DB_SCHEMA="Name, Age, Gender, Blood Type, Medical Condition, Insurance Provider, {Admission, Hospital, Date of Admission, Admission Type, Doctor, Room Number, Discharge Date, Medication, Test Results, Billing Amount,}"<BR>
 USER_ACCOUNTS="[{'username': 'admin', 'password': 'admin', 'role': 'readWrite'}, {'username': 'user', 'password': 'user', 'role': 'read'}]"<BR>
 
 - Lancer le programme avec la commande : **python3 migration.py**

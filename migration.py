@@ -41,7 +41,7 @@ def check_indexes(dataframe, str_indexes):
     print(f"Indexes à créer: {indexes}")
     return indexes
 
-def insert_df_to_mongo(dataframe, server, db_name, collection_name, indexes):
+def insert_df_to_mongo(dataframe, server, db_name, collection_name, db_schema, indexes):
     """ Insertion des lignes d'un dataframe dans une base de données MongoDB
     """
     # Connexion au serveur MongoDB
@@ -57,8 +57,23 @@ def insert_df_to_mongo(dataframe, server, db_name, collection_name, indexes):
         # Vidage de la collection
         collection.delete_many({})
         # Insertion du dataframe
-        result = collection.insert_many(dataframe.to_dict(orient='records'))
-        inserted_records = len(result.inserted_ids)
+        if db_schema:
+            inserted_records = 0
+            for record in dataframe.to_dict(orient='records'):
+                document = {}
+                for col in record:
+                    group = db_schema[col]
+                    if group:
+                        if group not in document:
+                            document[group] = {}
+                        document[group][col] = record[col]
+                    else:
+                        document[col] = record[col]
+                collection.insert_one(document)
+                inserted_records += 1
+        else:
+            result = collection.insert_many(dataframe.to_dict(orient='records'))
+            inserted_records = len(result.inserted_ids)
         # Création des indexes
         for index in indexes:
             collection.create_index(index)
@@ -96,7 +111,7 @@ def main():
     server = os.getenv('DB_SERVER')
     db_name = os.getenv('DB_NAME')
     collection_name = os.getenv('COLLECTION_NAME')
-    nb_records = insert_df_to_mongo(dataframe, os.getenv('DB_SERVER'), os.getenv('DB_NAME'), os.getenv('COLLECTION_NAME'), indexes)
+    nb_records = insert_df_to_mongo(dataframe, os.getenv('DB_SERVER'), os.getenv('DB_NAME'), os.getenv('COLLECTION_NAME'), eval(os.getenv('DB_SCHEMA')), indexes)
     # Logger le nombre d'enregistrements écrits
     print(f"{nb_records} enregistrements insérés dans la base {db_name}/{collection_name} sur {server}")
     # Insertion des comptes utilisateurs
