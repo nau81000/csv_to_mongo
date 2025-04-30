@@ -31,10 +31,38 @@ DB_SERVER=mongodb://test:test@127.0.0.1:27017/<BR>
 DB_NAME=TEST<BR>
 COLLECTION_NAME=TEST<BR>
 INDEXES=NAME,GENDER,COUNTRY&CITY<BR>
-DB_SCHEMA="Name, Age, Gender, Blood Type, Medical Condition, Insurance Provider, {Admission, Hospital, Date of Admission, Admission Type, Doctor, Room Number, Discharge Date, Medication, Test Results, Billing Amount,}"<BR>
+DB_SCHEMA="{'Name': '', 'Age': '', 'Gender': '', 'Blood Type': '', 'Medical Condition': '', 'Insurance Provider': '', 'Hospital': 'Admission', 'Date of Admission': 'Admission', 'Admission Type': 'Admission', 'Doctor': 'Admission', 'Room Number': 'Admission', 'Discharge Date': 'Admission', 'Medication': 'Admission', 'Test Results': 'Admission', 'Billing Amount': 'Admission'}"<BR>
 USER_ACCOUNTS="[{'username': 'admin', 'password': 'admin', 'role': 'readWrite'}, {'username': 'user', 'password': 'user', 'role': 'read'}]"<BR>
 
 - Lancer le programme avec la commande : **python3 migration.py**
+
+### 4. Schéma de données
+
+Exemple d'un schéma de données médicales
+
+~~~
+{
+    "_id" : "ObjectId",
+    "Name" : "string",
+    "Age" : "int",
+    "Gender" : "string",
+    "Blood Type" : "string",
+    "Medical Condition" : "string",
+    "Insurance Provider" : "string",
+    "Admission" : {
+        "Date of Admission" : "date",
+        "Doctor" : "string",
+        "Hospital" : "string",
+        "Billing Amount" : "double",
+        "Room Number" : "int",
+        "Admission Type" : "string",
+        "Discharge Date" : "date",
+        "Medication" : "string",
+        "Test Results" : "string"
+    }
+}
+~~~
+
 
 ### 4. Déroulement du script:
 
