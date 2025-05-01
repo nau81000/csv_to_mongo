@@ -137,3 +137,7 @@ docker logs mongo_migration
 ```
 docker-compose down -v
 ```
+
+Note:
+
+Utiliser docker-compose nécessite de placer le fichier csv dans le volume local spécifié dans le fichier docker-compose.yml
