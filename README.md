@@ -27,7 +27,27 @@ Le script nécessite l'installation des modules python suivants:
 - Définir un schéma de données si besoin sinon définir **DB_SCHEMA="{}"**
 - Définir les utilisateurs de la base et leur rôle respectif sinon définir **USER_ACCOUNTS="[]"**
 
-### 4. Exemple de configuration
+Note:
+
+**IL EST TRÈS FORTEMENT RECOMMANDÉ DE CONTRÔLER ET SÉCURISER LES ACCÈS À LA BASE DE DONNÉES.**
+
+### 4. Système d'authentification
+
+Mongo DB utilise le processus d'authentification SCRAM (Salted Challenge Response Authentication Mechanism) par défaut.
+
+À la création de l'utilisateur:
+
+- Le driver (côté client) effectue localement le hachage SCRAM-SHA-256 du mot de passe fourni en clair avec le sel fourni par le serveur (challenge)
+- Le mot de passe n’est jamais envoyé en clair sur le réseau
+- Le serveur MongoDB stocke une version dérivée et salée du mot de passe, pas le mot de passe brut
+
+Même principe à l'usage:
+
+- Le mot de passe est passé en clair au driver (côté client) 
+- Le mot de passe n’est jamais envoyé en clair sur le réseau
+- Après un échange client-serveur (envoi de preuve cryptographique), l'utilisateur est authentifié ou non
+
+### 5. Exemple de configuration
 
 CSV_DATASET_FILENAME=/Users/jdoe/dataset.csv<BR>
 DB_SERVER=mongodb://test:test@127.0.0.1:27017/<BR>
@@ -66,7 +86,7 @@ A partir du schéma de données médicales:
 ~~~
 </div>
 
-### 5. Exécution du script
+### 6. Exécution du script
 
 Lancer le programme avec la commande : **python3 migration.py**
 
@@ -90,27 +110,12 @@ Note:
 | `userAdmin`            | Peut créer, modifier et supprimer les utilisateurs de cette base.          |
 | `dbOwner`              | A tous les droits sur la base (`readWrite + dbAdmin + userAdmin`).         |
 
-- Le pré-hachage du mot de passe n'est plus possible avec les versions récentes de MongoDB. Mais si c'était possible, l'algorithme BCRYPT peut remplir cette tâche.
 
-Exemple de création d'un mot de passe avec Python:
+### 7. Tests
 
-```
-import bcrypt 
-# example password 
-password = 'test'
-# converting password to array of bytes 
-bytes = password.encode('utf-8') 
-# generating the salt 
-salt = bcrypt.gensalt() 
-# Hashing the password 
-hash = bcrypt.hashpw(bytes, salt)
-```
+Lancer la séquence de test avec la commande : **pytest**
 
-### 6. Tests
-
-Lancer la séquence de test avec la commande : **pytest** 
-
-### 7. Déploiement avec Docker et Docker-compose
+### 8. Déploiement avec Docker et Docker-compose
 
 A l'aide du fichier templates/docker-compose.yml.template, créer et personnaliser un fichier docker-compose.yml.
 
