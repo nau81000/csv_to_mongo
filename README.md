@@ -4,36 +4,71 @@
 
 ## CVS TO MONGO est un script python permettant de migrer un fichier CSV vers une base de données Mongo (NoSQL)
 
-### 1. Prérequis: 
+### 1. Prérequis
 
 Le script nécessite l'installation des modules python suivants:
 
+- Python (> 3.6)
 - Pandas
 - Pymongo
+- Dotenv
+- Pytest (pour exécuter les tests)
 
-### 2. Installation:
+### 2. Installation
 
 - Créer un nouveau dossier dans votre espace de travail
 - Entrer dans le dossier nouvellement créer et récupérer le projet en exécutant la commande : git clone https://github.com/nau81000/csv_to_mongo.git
 
-### 3. Utilisation:
+### 3. Configuration
 
-- Copier ou renommer le fichier .env.template en .env
+- Copier le fichier templates/.env.template en .env (le .env doit se trouver au même niveau que le script migration.py)
 - Editer le fichier .env en spécifiant les valeurs des variables correspondant à votre contexte
 - Le caractère & permet de créer un index concaténé (plusieurs colonnes)
+- Définir un schéma de données si besoin sinon définir **DB_SCHEMA="{}"**
+- Définir les utilisateurs de la base et leur rôle respectif sinon définir **USER_ACCOUNTS="[]"**
 
-Ex:
+### 4. Exemple de configuration
 
 CSV_DATASET_FILENAME=/Users/jdoe/dataset.csv<BR>
 DB_SERVER=mongodb://test:test@127.0.0.1:27017/<BR>
 DB_NAME=TEST<BR>
 COLLECTION_NAME=TEST<BR>
-INDEXES=NAME,GENDER,COUNTRY&CITY
-USER_ACCOUNTS="[{'username': 'admin', 'hashpw': b'$2b$12$JR304Lni8IuX/34WR4MsXelyDQgvE5wiiXTs2DwuWNC7qk1x8xccy' , 'role': 'admin', 'privileges': 'CRUD'}, {'username': 'user', 'hashpw': b'$2b$12$3u87g5okgHgUuOLDbSNHiuJa/4B8D.SuKytzrmiuxYg.OjN/bvYJS', 'role': 'user', 'privileges': 'R'}]"<BR>
+INDEXES=NAME,GENDER,COUNTRY&CITY<BR>
+DB_SCHEMA="{'Name': '', 'Age': '', 'Gender': '', 'Blood Type': '', 'Medical Condition': '', 'Insurance Provider': '', 'Hospital': 'Admission', 'Date of Admission': 'Admission', 'Admission Type': 'Admission', 'Doctor': 'Admission', 'Room Number': 'Admission', 'Discharge Date': 'Admission', 'Medication': 'Admission', 'Test Results': 'Admission', 'Billing Amount': 'Admission'}"<BR>
+USER_ACCOUNTS="[{'username': 'admin', 'password': 'admin', 'role': 'readWrite'}, {'username': 'user', 'password': 'user', 'role': 'read'}]"<BR>
 
-- Lancer le programme avec la commande : **python3 migration.py**
 
-### 4. Déroulement du script:
+A partir du schéma de données médicales:
+
+<div style="background-color: #f0f0f0; padding: 5px; border-radius: 5px;">
+
+~~~
+{
+    "_id"  : "ObjectId",
+    "Name" : "string",
+    "Age"  : "int",
+    "Gender"     : "string",
+    "Blood Type" : "string",
+    "Medical Condition"  : "string",
+    "Insurance Provider" : "string",
+    "Admission" : {
+        "Date of Admission" : "date",
+        "Doctor"            : "string",
+        "Hospital"          : "string",
+        "Billing Amount"    : "double",
+        "Room Number"       : "int",
+        "Admission Type"    : "string",
+        "Discharge Date"    : "date",
+        "Medication"        : "string",
+        "Test Results"      : "string"
+    }
+}
+~~~
+</div>
+
+### 5. Exécution du script
+
+Lancer le programme avec la commande : **python3 migration.py**
 
 - Lecture du fichier et construction d'un dataframe avec Pandas
 - Les colonnes du dataframe de type string sont converties en mode titre (première lettre de chaque mot en majuscule, les autres en minuscule)
@@ -44,11 +79,22 @@ USER_ACCOUNTS="[{'username': 'admin', 'hashpw': b'$2b$12$JR304Lni8IuX/34WR4MsXel
 
 Note:
 - Une collection d'utilisateurs est automatiquement créée à partir de la variable d'environnement `USER_ACCOUNTS`. Cette collection peut-être utilisée par une application pour contrôler l'accès à la base de données
-- Un hachage du mot de passe de chaque utilisateur est fortement recommandé. L'algorithme BCRYPT peut remplir cette tâche.
+- Un utilisateur peut avoir un rôle parmi:
+
+| Rôle                   | Description                                                                 |
+|------------------------|-----------------------------------------------------------------------------|
+| `read`                 | Peut lire toutes les collections, **sans écrire**.                          |
+| `readWrite`            | Peut lire et écrire dans toutes les collections de la base.                 |
+| `readWriteAnyDatabase` | Comme `readWrite`, mais sur **toutes les bases** (doit être assigné sur `admin`). |
+| `dbAdmin`              | Gère les index, les statistiques, les validations, etc. (pas les documents).|
+| `userAdmin`            | Peut créer, modifier et supprimer les utilisateurs de cette base.          |
+| `dbOwner`              | A tous les droits sur la base (`readWrite + dbAdmin + userAdmin`).         |
+
+- Le pré-hachage du mot de passe n'est plus possible avec les versions récentes de MongoDB. Mais si c'était possible, l'algorithme BCRYPT peut remplir cette tâche.
 
 Exemple de création d'un mot de passe avec Python:
 
-~~~
+```
 import bcrypt 
 # example password 
 password = 'test'
@@ -58,8 +104,40 @@ bytes = password.encode('utf-8')
 salt = bcrypt.gensalt() 
 # Hashing the password 
 hash = bcrypt.hashpw(bytes, salt)
-~~~
+```
 
-### 5. Tests:
+### 6. Tests
 
 Lancer la séquence de test avec la commande : **pytest** 
+
+### 7. Déploiement avec Docker et Docker-compose
+
+A l'aide du fichier templates/docker-compose.yml.template, créer et personnaliser un fichier docker-compose.yml.
+
+Docker-compose permet de créer automatiquement l'environnement de travail (création de la base et migration des données).
+
+- Construction de l'environnement avec la commande:
+
+```
+docker-compose up -d
+```
+
+- Visualisation des logs  avec les commandes:
+
+```
+docker logs mongo_db
+```
+
+```
+docker logs mongo_migration
+```
+
+- Destruction de l'environnement avec la commande:
+
+```
+docker-compose down -v
+```
+
+Note:
+
+Utiliser docker-compose nécessite de placer le fichier csv dans le volume local spécifié dans le fichier docker-compose.yml

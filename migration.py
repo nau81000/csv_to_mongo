@@ -41,7 +41,7 @@ def check_indexes(dataframe, str_indexes):
     print(f"Indexes à créer: {indexes}")
     return indexes
 
-def insert_df_to_mongo(dataframe, server, db_name, collection_name, indexes):
+def insert_df_to_mongo(dataframe, server, db_name, collection_name, db_schema, indexes):
     """ Insertion des lignes d'un dataframe dans une base de données MongoDB
     """
     # Connexion au serveur MongoDB
@@ -57,8 +57,23 @@ def insert_df_to_mongo(dataframe, server, db_name, collection_name, indexes):
         # Vidage de la collection
         collection.delete_many({})
         # Insertion du dataframe
-        result = collection.insert_many(dataframe.to_dict(orient='records'))
-        inserted_records = len(result.inserted_ids)
+        if db_schema:
+            inserted_records = 0
+            for record in dataframe.to_dict(orient='records'):
+                document = {}
+                for col in record:
+                    group = db_schema[col]
+                    if group:
+                        if group not in document:
+                            document[group] = {}
+                        document[group][col] = record[col]
+                    else:
+                        document[col] = record[col]
+                collection.insert_one(document)
+                inserted_records += 1
+        else:
+            result = collection.insert_many(dataframe.to_dict(orient='records'))
+            inserted_records = len(result.inserted_ids)
         # Création des indexes
         for index in indexes:
             collection.create_index(index)
@@ -68,45 +83,45 @@ def insert_df_to_mongo(dataframe, server, db_name, collection_name, indexes):
         client.close()
     return inserted_records
 
-def insert_accounts_to_mongo(user_list, server, db_name, collection_name):
+def insert_accounts_to_mongo(user_list, server, db_name):
     """ Insertion des comptes utilisateurs dans une base de données MongoDB
     """
     # Connexion au serveur MongoDB
     client = pymongo.MongoClient(server)
     # Création ou récupération de la base de données 
     db = client[db_name.lower()]
+    # Supprimer tous les utilisateurs de cette base
+    db.command("dropAllUsersFromDatabase")
     # Création ou récupération d'une collection
-    collection = db[collection_name.lower()]
-    # Suppression des indexes
-    collection.drop_indexes()
-    # Vidage de la collection
-    collection.delete_many({})
-    # Insertion du dataframe
-    result = collection.insert_many(user_list)
+    for user in user_list:
+        db.command("createUser", user['username'], pwd=user['password'], roles=[{"role": user['role'], "db": db_name.lower()}])
     client.close()
-    return len(result.inserted_ids)
+    return len(user_list)
 
 def main():
     """ Migration d'un fichier CSV dans une base MongoDB
     """
     # Chargement de l'environnement
     load_dotenv()
-    # Construction du dataframe 
-    dataframe = build_df(os.getenv('CSV_DATASET_FILENAME'))
-    # Vérification des indexes
-    indexes = check_indexes(dataframe, os.getenv('INDEXES'))
-    # Insertion du dataframe dans une base MongoDB
     server = os.getenv('DB_SERVER')
     db_name = os.getenv('DB_NAME')
     collection_name = os.getenv('COLLECTION_NAME')
-    nb_records = insert_df_to_mongo(dataframe, os.getenv('DB_SERVER'), os.getenv('DB_NAME'), os.getenv('COLLECTION_NAME'), indexes)
+    dataset_filename = os.getenv('CSV_DATASET_FILENAME')
+    indexes = os.getenv('INDEXES')
+    db_schema = eval(os.getenv('DB_SCHEMA'))
+    user_list = eval(os.getenv('USER_ACCOUNTS'))
+    # Construction du dataframe 
+    dataframe = build_df(dataset_filename)
+    # Vérification des indexes en focntion du dataframe
+    checked_indexes = check_indexes(dataframe, indexes)
+    # Insertion du dataframe dans une base MongoDB
+    nb_records = insert_df_to_mongo(dataframe, server, db_name, collection_name, db_schema, checked_indexes)
     # Logger le nombre d'enregistrements écrits
     print(f"{nb_records} enregistrements insérés dans la base {db_name}/{collection_name} sur {server}")
     # Insertion des comptes utilisateurs
-    user_list = eval(os.getenv('USER_ACCOUNTS'))
-    nb_users = insert_accounts_to_mongo(user_list , os.getenv('DB_SERVER'), os.getenv('DB_NAME'), 'ACCOUNTS')
+    nb_users = insert_accounts_to_mongo(user_list , server, db_name)
     # Logger le nombre d'enregistrements écrits
-    print(f"{nb_users} enregistrements insérés dans la base {db_name}/ACCOUNTS sur {server}")
+    print(f"{nb_users} utilisateurs reliés à {server}")
 
 if __name__ == '__main__':
     main()
