@@ -109,3 +109,31 @@ hash = bcrypt.hashpw(bytes, salt)
 ### 6. Tests
 
 Lancer la séquence de test avec la commande : **pytest** 
+
+### 7. Déploiement avec Docker et Docker-compose
+
+A l'aide du fichier templates/docker-compose.yml.template, créer et personnaliser un fichier docker-compose.yml.
+
+Docker-compose permet de créer automatiquement l'environnement de travail (création de la base et migration des données).
+
+- Construction de l'environnement avec la commande:
+
+```
+docker-compose up -d
+```
+
+- Visualisation des logs  avec les commandes:
+
+```
+docker logs mongo_db
+```
+
+```
+docker logs mongo_migration
+```
+
+- Destruction de l'environnement avec la commande:
+
+```
+docker-compose down -v
+```
