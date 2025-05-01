@@ -4,7 +4,7 @@
 
 ## CVS TO MONGO est un script python permettant de migrer un fichier CSV vers une base de données Mongo (NoSQL)
 
-### 1. Prérequis: 
+### 1. Prérequis
 
 Le script nécessite l'installation des modules python suivants:
 
@@ -14,12 +14,12 @@ Le script nécessite l'installation des modules python suivants:
 - Dotenv
 - Pytest (pour exécuter les tests)
 
-### 2. Installation:
+### 2. Installation
 
 - Créer un nouveau dossier dans votre espace de travail
 - Entrer dans le dossier nouvellement créer et récupérer le projet en exécutant la commande : git clone https://github.com/nau81000/csv_to_mongo.git
 
-### 3. Configuration:
+### 3. Configuration
 
 - Copier le fichier templates/.env.template en .env (le .env doit se trouver au même niveau que le script migration.py)
 - Editer le fichier .env en spécifiant les valeurs des variables correspondant à votre contexte
@@ -27,7 +27,7 @@ Le script nécessite l'installation des modules python suivants:
 - Définir un schéma de données si besoin sinon définir **DB_SCHEMA="{}"**
 - Définir les utilisateurs de la base et leur rôle respectif sinon définir **USER_ACCOUNTS="[]"**
 
-### 4. Exemple de configuration:
+### 4. Exemple de configuration
 
 CSV_DATASET_FILENAME=/Users/jdoe/dataset.csv<BR>
 DB_SERVER=mongodb://test:test@127.0.0.1:27017/<BR>
@@ -66,7 +66,7 @@ A partir du schéma de données médicales:
 ~~~
 </div>
 
-### 5. Exécution du script:
+### 5. Exécution du script
 
 Lancer le programme avec la commande : **python3 migration.py**
 
@@ -106,6 +106,6 @@ salt = bcrypt.gensalt()
 hash = bcrypt.hashpw(bytes, salt)
 ```
 
-### 6. Tests:
+### 6. Tests
 
 Lancer la séquence de test avec la commande : **pytest** 
