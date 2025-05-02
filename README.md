@@ -24,7 +24,7 @@ Le script nécessite l'installation des modules python suivants:
 - Copier le fichier templates/.env.template en .env (le .env doit se trouver au même niveau que le script migration.py)
 - Editer le fichier .env en spécifiant les valeurs des variables correspondant à votre contexte
 - Le caractère & permet de créer un index concaténé (plusieurs colonnes)
-- Définir un schéma de données si besoin sinon définir **DB_SCHEMA="{}"**
+- Définir un schéma de données si besoin sinon définir **DB_SCHEMA="{}"**. Pour chaque colonne, vous pouvez définir un groupe, ou non. Voir exemple un peu plus loin
 - Définir les utilisateurs de la base et leur rôle respectif sinon définir **USER_ACCOUNTS="[]"**
 
 Note:
@@ -55,6 +55,7 @@ DB_NAME=TEST<BR>
 COLLECTION_NAME=TEST<BR>
 INDEXES=NAME,GENDER,COUNTRY&CITY<BR>
 DB_SCHEMA="{'Name': '', 'Age': '', 'Gender': '', 'Blood Type': '', 'Medical Condition': '', 'Insurance Provider': '', 'Hospital': 'Admission', 'Date of Admission': 'Admission', 'Admission Type': 'Admission', 'Doctor': 'Admission', 'Room Number': 'Admission', 'Discharge Date': 'Admission', 'Medication': 'Admission', 'Test Results': 'Admission', 'Billing Amount': 'Admission'}"<BR>
+DATE_PATTERN="%Y-%m-%d"<BR>
 USER_ACCOUNTS="[{'username': 'admin', 'password': 'admin', 'role': 'readWrite'}, {'username': 'user', 'password': 'user', 'role': 'read'}]"<BR>
 
 
