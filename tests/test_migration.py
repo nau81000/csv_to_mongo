@@ -29,6 +29,8 @@ class TestMigration:
         # Vérification des indexes
         indexes = check_indexes(self.dataframe, os.getenv('INDEXES'))
         # Insertion du dataframe dans une base MongoDB
-        result = insert_df_to_mongo(self.dataframe, os.getenv('DB_SERVER'), os.getenv('DB_NAME'), os.getenv('COLLECTION_NAME'), eval(os.getenv('DB_SCHEMA')), indexes)
+        result = insert_df_to_mongo(
+            self.dataframe, os.getenv('DB_SERVER'), os.getenv('DB_NAME'), os.getenv('COLLECTION_NAME'), eval(os.getenv('DB_SCHEMA')), indexes, os.getenv('DATE_PATTERN')
+        )
         # Test que le dataframe et la base de données ont le même nombre d'enregistrements
         assert result == len(self.dataframe)
