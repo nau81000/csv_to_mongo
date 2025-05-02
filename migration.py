@@ -4,6 +4,7 @@ import os
 import pymongo
 import pandas
 from dotenv import load_dotenv
+from datetime import datetime
 
 def build_df(filename):
     """ Création un dataframe à partir d'un fichier CSV
@@ -41,7 +42,19 @@ def check_indexes(dataframe, str_indexes):
     print(f"Indexes à créer: {indexes}")
     return indexes
 
-def insert_df_to_mongo(dataframe, server, db_name, collection_name, db_schema, indexes):
+def process_value(value, date_pattern):
+    """ Convert some value to the appropriate type
+
+        For example, 2024-10-12 should be a date, not a string
+    """
+    if date_pattern:
+        try:
+            value = datetime.strptime(value, date_pattern)
+        except Exception:
+            pass
+    return value
+    
+def insert_df_to_mongo(dataframe, server, db_name, collection_name, db_schema, indexes, date_pattern):
     """ Insertion des lignes d'un dataframe dans une base de données MongoDB
     """
     # Connexion au serveur MongoDB
@@ -57,23 +70,22 @@ def insert_df_to_mongo(dataframe, server, db_name, collection_name, db_schema, i
         # Vidage de la collection
         collection.delete_many({})
         # Insertion du dataframe
-        if db_schema:
-            inserted_records = 0
-            for record in dataframe.to_dict(orient='records'):
-                document = {}
-                for col in record:
+        inserted_records = 0
+        for record in dataframe.to_dict(orient='records'):
+            document = {}
+            for col in record:
+                if db_schema:
                     group = db_schema[col]
                     if group:
                         if group not in document:
                             document[group] = {}
-                        document[group][col] = record[col]
+                        document[group][col] = process_value(record[col], date_pattern)
                     else:
-                        document[col] = record[col]
-                collection.insert_one(document)
-                inserted_records += 1
-        else:
-            result = collection.insert_many(dataframe.to_dict(orient='records'))
-            inserted_records = len(result.inserted_ids)
+                        document[col] = process_value(record[col], date_pattern)
+                else:
+                    document[col] = process_value(record[col], date_pattern)
+            collection.insert_one(document)
+            inserted_records += 1
         # Création des indexes
         for index in indexes:
             collection.create_index(index)
@@ -110,12 +122,13 @@ def main():
     indexes = os.getenv('INDEXES')
     db_schema = eval(os.getenv('DB_SCHEMA'))
     user_list = eval(os.getenv('USER_ACCOUNTS'))
+    date_pattern = os.getenv('DATE_PATTERN')
     # Construction du dataframe 
     dataframe = build_df(dataset_filename)
     # Vérification des indexes en focntion du dataframe
     checked_indexes = check_indexes(dataframe, indexes)
     # Insertion du dataframe dans une base MongoDB
-    nb_records = insert_df_to_mongo(dataframe, server, db_name, collection_name, db_schema, checked_indexes)
+    nb_records = insert_df_to_mongo(dataframe, server, db_name, collection_name, db_schema, checked_indexes, date_pattern)
     # Logger le nombre d'enregistrements écrits
     print(f"{nb_records} enregistrements insérés dans la base {db_name}/{collection_name} sur {server}")
     # Insertion des comptes utilisateurs
