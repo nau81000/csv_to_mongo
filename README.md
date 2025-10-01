@@ -14,12 +14,20 @@ Le script nécessite l'installation des modules python suivants:
 - Dotenv
 - Pytest (pour exécuter les tests)
 
-### 2. Installation
+### 2. Structure principale du projet
+
+```
+├── migration.py             # Script d'initialisation de la base de données
+├── results.pdf              # Résultats d'analyse
+├── templates/               # Dossier regroupant les templates
+```
+
+### 3. Installation
 
 - Créer un nouveau dossier dans votre espace de travail
 - Entrer dans le dossier nouvellement créer et récupérer le projet en exécutant la commande : git clone https://github.com/nau81000/csv_to_mongo.git
 
-### 3. Configuration
+### 4. Configuration
 
 - Copier le fichier templates/.env.template en .env (le .env doit se trouver au même niveau que le script migration.py)
 - Editer le fichier .env en spécifiant les valeurs des variables correspondant à votre contexte
@@ -31,7 +39,7 @@ Note:
 
 **IL EST TRÈS FORTEMENT RECOMMANDÉ DE CONTRÔLER ET SÉCURISER LES ACCÈS À LA BASE DE DONNÉES.**
 
-### 4. Système d'authentification
+### 5. Système d'authentification
 
 Mongo DB utilise le processus d'authentification SCRAM (Salted Challenge Response Authentication Mechanism) par défaut.
 
@@ -47,7 +55,7 @@ Même principe à l'usage:
 - Le mot de passe n’est jamais envoyé en clair sur le réseau
 - Après un échange client-serveur (envoi de preuve cryptographique), l'utilisateur est authentifié ou non
 
-### 5. Exemple de configuration
+### 6. Exemple de configuration
 
 CSV_DATASET_FILENAME=/Users/jdoe/dataset.csv<BR>
 DB_SERVER=mongodb://test:test@127.0.0.1:27017/<BR>
@@ -87,7 +95,7 @@ A partir du schéma de données médicales:
 ~~~
 </div>
 
-### 6. Exécution du script
+### 7. Exécution du script
 
 Lancer le programme avec la commande : **python3 migration.py**
 
@@ -112,11 +120,11 @@ Note:
 | `dbOwner`              | A tous les droits sur la base (`readWrite + dbAdmin + userAdmin`).         |
 
 
-### 7. Tests
+### 8. Tests
 
 Lancer la séquence de test avec la commande : **pytest**
 
-### 8. Déploiement avec Docker et Docker-compose
+### 9. Déploiement avec Docker et Docker-compose
 
 A l'aide du fichier templates/docker-compose.yml.template, créer et personnaliser un fichier docker-compose.yml.
 
@@ -128,7 +136,7 @@ Docker-compose permet de créer automatiquement l'environnement de travail (cré
 docker-compose up -d
 ```
 
-- Visualisation des logs  avec les commandes:
+- Visualisation des logs avec les commandes:
 
 ```
 docker logs mongo_db
