@@ -17,6 +17,7 @@ Le script nécessite l'installation des modules python suivants:
 ### 2. Structure principale du projet
 
 ```
+├── docker-compose.yml       # Paramètrage des services lancés avec Docker
 ├── migration.py             # Script d'initialisation de la base de données
 ├── results.pdf              # Résultats d'analyse
 ```
