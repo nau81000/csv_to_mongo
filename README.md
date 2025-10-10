@@ -32,7 +32,7 @@ Le script nécessite l'installation des modules python suivants:
 - Copier le fichier templates/.env.template en .env (le .env doit se trouver au même niveau que le script migration.py)
 - Editer le fichier .env en spécifiant les valeurs des variables correspondant à votre contexte
 - Le caractère & permet de créer un index concaténé (plusieurs colonnes)
-- Définir un schéma de données si besoin sinon définir **DB_SCHEMA="{}"**. Pour chaque colonne, vous pouvez définir un groupe, ou non. Voir exemple un peu plus loin
+- Définir un schéma de données si besoin sinon définir **MONGO_COLLECTION_SCHEMA="{}"**. Pour chaque colonne, vous pouvez définir un groupe, ou non. Voir exemple un peu plus loin
 - Définir les utilisateurs de la base et leur rôle respectif sinon définir **USER_ACCOUNTS="[]"**
 
 Note:
@@ -57,21 +57,21 @@ Même principe à l'usage:
 
 ### 6. Exemple de configuration
 
-CSV_DATASET_FILENAME=/Users/jdoe/dataset.csv<BR>
-DB_SERVER=mongodb://test:test@127.0.0.1:27017/<BR>
-DB_NAME=TEST<BR>
-COLLECTION_NAME=TEST<BR>
-INDEXES=NAME,GENDER,COUNTRY&CITY<BR>
-DB_SCHEMA="{'Name': '', 'Age': '', 'Gender': '', 'Blood Type': '', 'Medical Condition': '', 'Insurance Provider': '', 'Hospital': 'Admission', 'Date of Admission': 'Admission', 'Admission Type': 'Admission', 'Doctor': 'Admission', 'Room Number': 'Admission', 'Discharge Date': 'Admission', 'Medication': 'Admission', 'Test Results': 'Admission', 'Billing Amount': 'Admission'}"<BR>
-DATE_PATTERN="%Y-%m-%d"<BR>
-USER_ACCOUNTS="[{'username': 'admin', 'password': 'admin', 'role': 'readWrite'}, {'username': 'user', 'password': 'user', 'role': 'read'}]"<BR>
-
+```
+MONGO_COLLECTION_NAME=test
+MONGO_COLLECTION_INDEXES=NAME,GENDER,COUNTRY&CITY
+MONGO_COLLECTION_SCHEMA="{'Name': '', 'Age': '', 'Gender': '', 'Blood Type': '', 'Medical Condition': '', 'Insurance Provider': '', 'Hospital': 'Admission', 'Date of Admission': 'Admission', 'Admission Type': 'Admission', 'Doctor': 'Admission', 'Room Number': 'Admission', 'Discharge Date': 'Admission', 'Medication': 'Admission', 'Test Results': 'Admission', 'Billing Amount': 'Admission'}"
+MONGO_INITDB_DATABASE=test
+MONGO_INITDB_ROOT_USERNAME=root
+MONGO_INITDB_ROOT_PASSWORD=root
+MONGO_SERVER_URI=mongodb://root:root@mongo_db:27017
+SOURCE_URI=https://www.kaggle.com/datasets/prasad22/healthcare-dataset/data?select=healthcare_dataset.csv
+USER_ACCOUNTS="[{'username': 'admin', 'password': 'admin', 'role': 'readWrite'}, {'username': 'user', 'password': 'user', 'role': 'read'}]"
+```
 
 A partir du schéma de données médicales:
 
-<div style="background-color: #f0f0f0; padding: 5px; border-radius: 5px;">
-
-~~~
+```
 {
     "_id"  : "ObjectId",
     "Name" : "string",
@@ -92,8 +92,7 @@ A partir du schéma de données médicales:
         "Test Results"      : "string"
     }
 }
-~~~
-</div>
+```
 
 ### 7. Exécution du script
 
@@ -122,11 +121,23 @@ Note:
 
 ### 8. Tests
 
-Lancer la séquence de test avec la commande : **pytest**
+Lancer la séquence de test avec la commande : 
+
+```
+pytest
+```
+
+Note:
+
+La variable d'environnement MONGO_SERVER_URI est initialement positionnée pour atteindre un serveur Mongo dans un environnement Docker. Si vous lancez les tests dans une console de la machine hôte, il faut faire correspondre le serveur à l'adresse 127.0.0.1
+
+Exemple d'une ligne à rajouter dans /etc/hosts (MacOS ou Linux):
+
+```
+127.0.0.1 mongo_db
+```
 
 ### 9. Déploiement avec Docker et Docker-compose
-
-A l'aide du fichier templates/docker-compose.yml.template, créer et personnaliser un fichier docker-compose.yml.
 
 Docker-compose permet de créer automatiquement l'environnement de travail (création de la base et migration des données).
 
@@ -151,7 +162,3 @@ docker logs mongo_migration
 ```
 docker-compose down -v
 ```
-
-Note:
-
-Utiliser docker-compose nécessite de placer le fichier csv dans le volume local spécifié dans le fichier docker-compose.yml

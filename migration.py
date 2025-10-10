@@ -12,8 +12,8 @@ def build_df(filename):
         Mise en mode titre des colonnes de type string
         Suppression des doublons
     """
-    # Construction du dataframe à partir du fichier CSV
-    dataframe = pandas.read_csv(filename, delimiter=',')
+    # Construction du dataframe à partir du fichier CSV contenu dans un zip
+    dataframe = pandas.read_csv(filename, delimiter=',', compression="zip")
     # Conversion des colonnes de type string (object) en mode titre (1ère lettre d'un mot en majuscule, les autres en minuscule)
     for col in dataframe.select_dtypes(include='object').columns:
         dataframe[col] = dataframe[col].str.title()
@@ -54,7 +54,7 @@ def process_value(value, date_pattern):
             pass
     return value
     
-def insert_df_to_mongo(dataframe, server, db_name, collection_name, db_schema, indexes, date_pattern):
+def insert_df_to_mongo(dataframe, server, db_name, collection_name, db_schema, indexes, date_pattern="%Y-%m-%d"):
     """ Insertion des lignes d'un dataframe dans une base de données MongoDB
     """
     # Connexion au serveur MongoDB
@@ -115,20 +115,19 @@ def main():
     """
     # Chargement de l'environnement
     load_dotenv()
-    server = os.getenv('DB_SERVER')
-    db_name = os.getenv('DB_NAME')
-    collection_name = os.getenv('COLLECTION_NAME')
-    dataset_filename = os.getenv('CSV_DATASET_FILENAME')
-    indexes = os.getenv('INDEXES')
-    db_schema = eval(os.getenv('DB_SCHEMA'))
+    server = os.getenv('MONGO_SERVER_URI')
+    db_name = os.getenv('MONGO_INITDB_DATABASE')
+    collection_name = os.getenv('MONGO_COLLECTION_NAME')
+    dataset_filename = os.getenv('SOURCE_URI')
+    indexes = os.getenv('MONGO_COLLECTION_INDEXES')
+    schema = eval(os.getenv('MONGO_COLLECTION_SCHEMA'))
     user_list = eval(os.getenv('USER_ACCOUNTS'))
-    date_pattern = os.getenv('DATE_PATTERN')
     # Construction du dataframe 
     dataframe = build_df(dataset_filename)
     # Vérification des indexes en focntion du dataframe
     checked_indexes = check_indexes(dataframe, indexes)
     # Insertion du dataframe dans une base MongoDB
-    nb_records = insert_df_to_mongo(dataframe, server, db_name, collection_name, db_schema, checked_indexes, date_pattern)
+    nb_records = insert_df_to_mongo(dataframe, server, db_name, collection_name, schema, checked_indexes)
     # Logger le nombre d'enregistrements écrits
     print(f"{nb_records} enregistrements insérés dans la base {db_name}/{collection_name} sur {server}")
     # Insertion des comptes utilisateurs

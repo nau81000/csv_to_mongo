@@ -1,0 +1,48 @@
+services:
+  db:
+    container_name: mongo_db
+    image: mongo:latest
+    volumes:
+      - ./docker/mongodb:/data/db
+    restart: on-failure
+    networks:
+      - frontend
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+  mongo_migration:
+    container_name: mongo_migration
+    depends_on:
+      - db
+    restart: on-failure
+    networks:
+      - frontend
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM ubuntu:latest
+        RUN apt-get update -y && apt-get install git python3-pymongo python3-pandas python3-dotenv -y
+        WORKDIR /var/tmp
+        COPY migration.py /var/tmp/migration.py
+    command: 
+      - bash
+      - -c
+      - >
+        python3 migration.py;
+        sleep infinity;
+    environment:
+      - MONGO_COLLECTION_NAME
+      - MONGO_COLLECTION_INDEXES
+      - MONGO_COLLECTION_SCHEMA
+      - MONGO_INITDB_DATABASE
+      - MONGO_SERVER_URI
+      - SOURCE_URI
+      - USER_ACCOUNTS
+
+networks:
+  frontend:
+    # Specify driver options
+    driver: bridge
