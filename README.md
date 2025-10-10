@@ -19,7 +19,6 @@ Le script nécessite l'installation des modules python suivants:
 ```
 ├── migration.py             # Script d'initialisation de la base de données
 ├── results.pdf              # Résultats d'analyse
-├── templates/               # Dossier regroupant les templates
 ```
 
 ### 3. Installation
@@ -29,7 +28,7 @@ Le script nécessite l'installation des modules python suivants:
 
 ### 4. Configuration
 
-- Copier le fichier templates/.env.template en .env (le .env doit se trouver au même niveau que le script migration.py)
+- Copier le fichier .env.template en .env (le .env doit se trouver au même niveau que le script migration.py)
 - Editer le fichier .env en spécifiant les valeurs des variables correspondant à votre contexte
 - Le caractère & permet de créer un index concaténé (plusieurs colonnes)
 - Définir un schéma de données si besoin sinon définir **MONGO_COLLECTION_SCHEMA="{}"**. Pour chaque colonne, vous pouvez définir un groupe, ou non. Voir exemple un peu plus loin
